@@ -1,0 +1,10 @@
+Akita
+Bichon_frise
+Bulldog
+Chow_chow
+Cocker_spaniel
+Doberman_pinscher
+German_shepherd_dog
+Labrador_retriever
+Miniature_schnauzer
+Yorkshire_terrier

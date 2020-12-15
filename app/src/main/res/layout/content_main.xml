@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".MainActivity">
+
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <ImageView
+                    android:id="@+id/mPhotoImageView"
+                    android:layout_width="300dp"
+                    android:layout_height="300dp"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginTop="70dp"
+                    android:layout_marginRight="30dp" />
+
+
+            <TextView
+                    android:id="@+id/mResultTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="30dp"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="@string/defaultImage"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginRight="30dp"
+                    android:layout_weight="2"
+                    android:orientation="horizontal">
+
+
+                <Button
+
+                        android:id="@+id/mCameraButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="5dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/button_design"
+                        android:drawableStart="@drawable/ic_menu_camera"
+                        android:paddingLeft="10dp"
+                        android:text="Camera"
+                        android:textColor="@color/Black_Color"
+                        android:textStyle="bold"
+
+
+                        />
+
+                <Button
+                        android:id="@+id/mGalleryButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/button_design"
+                        android:drawableStart="@drawable/ic_menu_gallery"
+                        android:paddingLeft="10dp"
+                        android:text="Gallery"
+                        android:textColor="@color/Black_Color"
+                        android:textStyle="bold" />
+
+            </LinearLayout>
+
+
+            <Button
+                    android:id="@+id/mDetectButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="30dp"
+                    android:background="@drawable/button_design"
+                    android:drawableTop="@drawable/done"
+                    android:paddingTop="15dp"
+                    android:textColor="@color/White_Color"
+                    android:textStyle="bold" />
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</LinearLayout>

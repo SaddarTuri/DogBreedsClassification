@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Dog Breeds Classification</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Lets have a fun with pets</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+
+    <string name="how_to_use">How to Use</string>
+    <string name="menu_share">Share</string>
+    <string name="about_us">About Us</string>
+
+    <string name="buttonSelectPhoto">Select Photo</string>
+    <string name="buttonTakePhoto">Start Camera</string>
+    <string name="buttonDiagnose">Detect</string>
+    <string name="defaultImage">Default image set now...</string>
+    <string name="descriptionImage">View for displaying image</string>
+
+
+</resources>
