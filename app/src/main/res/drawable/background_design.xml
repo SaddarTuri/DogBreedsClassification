@@ -4,6 +4,6 @@
     <corners android:radius="10dp"></corners>
 
     <stroke
-            android:width="3dp"
-            android:color="@color/ToolBar_color" />
+        android:width="3dp"
+        android:color="#1565C0" />
 </shape>

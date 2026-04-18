@@ -1,12 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#fff</color>
-    <color name="colorPrimaryDark">#454545</color>
-    <color name="colorAccent">#ff1031</color>
-    <color name="Background_Color">#DEDEDE</color>
-    <color name="ToolBar_color">#505050</color>
-    <color name="Dark">#FFFFFF</color>
-    <color name="White_Color">#fff</color>
-    <color name="Black_Color">#000</color>
-    <color name="grey">#B3B6B7</color>
+    <!-- Primary brand colors -->
+    <color name="colorPrimary">#1565C0</color>
+    <color name="colorPrimaryDark">#003c8f</color>
+    <color name="colorPrimaryLight">#5E92F3</color>
+    <color name="colorAccent">#FF8F00</color>
+    <color name="colorAccentDark">#C56000</color>
+
+    <!-- Background & surface colors -->
+    <color name="colorBackground">#F0F4FF</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorCardBackground">#FFFFFF</color>
+
+    <!-- Text colors -->
+    <color name="colorTextPrimary">#1A1A2E</color>
+    <color name="colorTextSecondary">#546E7A</color>
+    <color name="colorTextOnPrimary">#FFFFFF</color>
+    <color name="colorTextHint">#90A4AE</color>
+
+    <!-- Confidence bar colors -->
+    <color name="colorConfidenceHigh">#2E7D32</color>
+    <color name="colorConfidenceMedium">#F57F17</color>
+    <color name="colorConfidenceLow">#C62828</color>
+
+    <!-- Splash gradient colors -->
+    <color name="splashStart">#0D1B2A</color>
+    <color name="splashMid">#1565C0</color>
+    <color name="splashEnd">#1E3A5F</color>
+
+    <!-- Utility -->
+    <color name="colorDivider">#E0E7FF</color>
+    <color name="colorRipple">#1A1565C0</color>
+    <color name="colorShadow">#1A000000</color>
+    <color name="colorButtonCamera">#E8F0FE</color>
+    <color name="colorButtonGallery">#E8F0FE</color>
+    <color name="colorDetectButton">#1565C0</color>
+    <color name="colorDetectButtonEnd">#0D47A1</color>
 </resources>
