@@ -20,7 +20,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -369,7 +369,7 @@ private fun ResultCard(result: BreedResult) {
 
             // Confidence bar
             LinearProgressIndicator(
-                progress = result.confidence,
+                progress = { result.confidence },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
@@ -634,7 +634,7 @@ private fun AppDrawerContent(onClose: () -> Unit, onShare: () -> Unit) {
         Spacer(Modifier.height(12.dp))
 
         NavigationDrawerItem(
-            icon = { Icon(Icons.Outlined.HelpOutline, null) },
+            icon = { Icon(Icons.AutoMirrored.Outlined.HelpOutline, null) },
             label = { Text("How to Use") },
             selected = false,
             onClick = onClose,
