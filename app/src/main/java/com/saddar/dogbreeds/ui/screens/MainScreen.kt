@@ -6,17 +6,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.LibraryBooks
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.HelpOutline
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.saddar.dogbreeds.R
@@ -38,9 +40,31 @@ import com.saddar.dogbreeds.data.BreedResult
 import com.saddar.dogbreeds.ui.theme.*
 import com.saddar.dogbreeds.viewmodel.BreedUiState
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
-enum class BottomTab { DISCOVER, LIBRARY }
+// ── Tab definitions ───────────────────────────────────────────────────────────
+
+enum class BottomTab { IDENTIFY, BREEDS }
+
+private data class BreedInfo(
+    val name: String,
+    val traits: List<String>,
+    val emoji: String
+)
+
+private val ALL_BREEDS = listOf(
+    BreedInfo("Akita",             listOf("Loyal", "Dignified", "Protective"),  "🐕"),
+    BreedInfo("Beagle",            listOf("Friendly", "Curious", "Merry"),       "🐶"),
+    BreedInfo("Boxer",             listOf("Playful", "Bright", "Energetic"),     "🥊"),
+    BreedInfo("Bulldog",           listOf("Calm", "Courageous", "Friendly"),     "💪"),
+    BreedInfo("Chihuahua",         listOf("Alert", "Sassy", "Devoted"),          "🌮"),
+    BreedInfo("Doberman",          listOf("Alert", "Fearless", "Loyal"),         "🛡️"),
+    BreedInfo("Golden Retriever",  listOf("Friendly", "Reliable", "Gentle"),     "🌟"),
+    BreedInfo("Husky",             listOf("Athletic", "Alert", "Gentle"),        "❄️"),
+    BreedInfo("Labrador",          listOf("Friendly", "Active", "Outgoing"),     "🎾"),
+    BreedInfo("Yorkshire Terrier", listOf("Affectionate", "Spirited", "Bold"),   "🎀"),
+)
+
+// ── Root screen ───────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,12 +77,12 @@ fun MainScreen(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var selectedTab by remember { mutableStateOf(BottomTab.DISCOVER) }
+    var selectedTab by remember { mutableStateOf(BottomTab.IDENTIFY) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            CanineDrawerContent(
+            AppDrawerContent(
                 onClose = { scope.launch { drawerState.close() } },
                 onShare = onShareClick
             )
@@ -67,61 +91,25 @@ fun MainScreen(
         Scaffold(
             containerColor = LightLavender,
             topBar = {
-                CanineTopBar(onMenuClick = { scope.launch { drawerState.open() } })
+                AppTopBar(onMenuClick = { scope.launch { drawerState.open() } })
             },
             bottomBar = {
-                CanineBottomBar(
+                AppBottomBar(
                     selectedTab = selectedTab,
                     onTabSelected = { selectedTab = it },
                     onCameraClick = onCameraClick
                 )
             }
         ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-
-                // ── Image card with overlaid camera/gallery buttons ───────
-                ImagePreviewCard(
+            when (selectedTab) {
+                BottomTab.IDENTIFY -> IdentifyContent(
                     uiState = uiState,
+                    innerPadding = innerPadding,
                     onCameraClick = onCameraClick,
-                    onGalleryClick = onGalleryClick
+                    onGalleryClick = onGalleryClick,
+                    onDetectClick = onDetectClick
                 )
-
-                // ── Detection result card (animated appearance) ───────────
-                AnimatedVisibility(
-                    visible = uiState.detectionResult != null,
-                    enter = slideInVertically(tween(400)) { it / 2 } + fadeIn(tween(400)),
-                    exit  = fadeOut(tween(200))
-                ) {
-                    uiState.detectionResult?.let { ResultCard(it) }
-                }
-
-                // ── Status / hint text ────────────────────────────────────
-                if (uiState.detectionResult == null && uiState.statusMessage.isNotBlank()) {
-                    Text(
-                        text = uiState.statusMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextGray,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-
-                // ── Identify Breed button ─────────────────────────────────
-                IdentifyBreedButton(
-                    isDetecting = uiState.isDetecting,
-                    onClick = onDetectClick
-                )
-
-                Spacer(Modifier.height(8.dp))
+                BottomTab.BREEDS -> BreedsContent(innerPadding = innerPadding)
             }
         }
     }
@@ -130,7 +118,7 @@ fun MainScreen(
 // ── Top bar ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun CanineTopBar(onMenuClick: () -> Unit) {
+private fun AppTopBar(onMenuClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -138,10 +126,7 @@ private fun CanineTopBar(onMenuClick: () -> Unit) {
             .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            onClick = onMenuClick,
-            modifier = Modifier.size(40.dp)
-        ) {
+        IconButton(onClick = onMenuClick, modifier = Modifier.size(40.dp)) {
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu",
@@ -151,7 +136,7 @@ private fun CanineTopBar(onMenuClick: () -> Unit) {
         }
 
         Text(
-            text = "Canine Intel",
+            text = "Dog Breeds",
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 8.dp),
@@ -159,7 +144,6 @@ private fun CanineTopBar(onMenuClick: () -> Unit) {
             color = DarkNavy
         )
 
-        // Circular icon button (right)
         Box(
             modifier = Modifier
                 .size(42.dp)
@@ -168,7 +152,7 @@ private fun CanineTopBar(onMenuClick: () -> Unit) {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_paw),
-                contentDescription = "App",
+                contentDescription = "App icon",
                 tint = Color.White,
                 modifier = Modifier.size(22.dp)
             )
@@ -176,25 +160,120 @@ private fun CanineTopBar(onMenuClick: () -> Unit) {
     }
 }
 
-// ── Image preview card ────────────────────────────────────────────────────────
+// ── IDENTIFY tab content ──────────────────────────────────────────────────────
 
 @Composable
-private fun ImagePreviewCard(
+private fun IdentifyContent(
     uiState: BreedUiState,
+    innerPadding: PaddingValues,
     onCameraClick: () -> Unit,
-    onGalleryClick: () -> Unit
+    onGalleryClick: () -> Unit,
+    onDetectClick: () -> Unit
 ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+
+        // ── Image preview card (no overlaid buttons) ──────────────────
+        ImagePreviewCard(uiState = uiState)
+
+        // ── Camera & Gallery buttons BELOW the image ──────────────────
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = onCameraClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkNavy),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, DarkNavy)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CameraAlt,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Camera",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
+                )
+            }
+
+            OutlinedButton(
+                onClick = onGalleryClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkNavy),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, DarkNavy)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PhotoLibrary,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Gallery",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
+                )
+            }
+        }
+
+        // ── Result card ───────────────────────────────────────────────
+        AnimatedVisibility(
+            visible = uiState.detectionResult != null,
+            enter = slideInVertically(tween(400)) { it / 2 } + fadeIn(tween(400)),
+            exit  = fadeOut(tween(200))
+        ) {
+            uiState.detectionResult?.let { ResultCard(it) }
+        }
+
+        // ── Status / hint text ────────────────────────────────────────
+        if (uiState.detectionResult == null && uiState.statusMessage.isNotBlank()) {
+            Text(
+                text = uiState.statusMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextGray,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        // ── Identify Breed button ─────────────────────────────────────
+        IdentifyBreedButton(isDetecting = uiState.isDetecting, onClick = onDetectClick)
+
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+// ── Image preview card (clean, no overlaid buttons) ──────────────────────────
+
+@Composable
+private fun ImagePreviewCard(uiState: BreedUiState) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(290.dp),
+            .height(280.dp),
         shape = RoundedCornerShape(28.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFD0D4EA))
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-
-            // Dog image
             if (uiState.currentBitmap != null) {
                 androidx.compose.foundation.Image(
                     bitmap = uiState.currentBitmap.asImageBitmap(),
@@ -210,65 +289,6 @@ private fun ImagePreviewCard(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-
-            // Bottom gradient scrim
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.45f)
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color(0x99000000))
-                        )
-                    )
-            )
-
-            // Camera + Gallery overlay buttons
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OverlayButton(
-                    icon = { Icon(Icons.Default.CameraAlt, null, Modifier.size(18.dp)) },
-                    label = "Camera",
-                    onClick = onCameraClick
-                )
-                OverlayButton(
-                    icon = { Icon(Icons.Default.PhotoLibrary, null, Modifier.size(18.dp)) },
-                    label = "Gallery",
-                    onClick = onGalleryClick
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun OverlayButton(
-    icon: @Composable () -> Unit,
-    label: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(50),
-        color = Color.White.copy(alpha = 0.92f),
-        tonalElevation = 2.dp
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            icon()
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp),
-                color = DarkNavy
-            )
         }
     }
 }
@@ -277,6 +297,8 @@ private fun OverlayButton(
 
 @Composable
 private fun ResultCard(result: BreedResult) {
+    val isUnidentified = result.breedName == "Unidentified Breed"
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -285,26 +307,29 @@ private fun ResultCard(result: BreedResult) {
     ) {
         Column(modifier = Modifier.padding(22.dp)) {
 
-            // Header row: "CURATED RESULT" + "ELITE IDENTIFICATION" chip
+            // Header row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "CURATED RESULT",
+                    text = "DETECTION RESULT",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextGray,
                     modifier = Modifier.weight(1f)
                 )
                 Box(
                     modifier = Modifier
-                        .background(ChipBlue, RoundedCornerShape(50))
+                        .background(
+                            if (isUnidentified) Color(0xFFFFE0E0) else ChipBlue,
+                            RoundedCornerShape(50)
+                        )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "ELITE IDENTIFICATION",
+                        text = if (isUnidentified) "LOW CONFIDENCE" else "BREED IDENTIFIED",
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                        color = DarkNavy
+                        color = if (isUnidentified) Color(0xFFB00020) else DarkNavy
                     )
                 }
             }
@@ -315,7 +340,7 @@ private fun ResultCard(result: BreedResult) {
             Text(
                 text = result.breedName,
                 style = MaterialTheme.typography.headlineLarge,
-                color = DarkNavy
+                color = if (isUnidentified) Color(0xFFB00020) else DarkNavy
             )
 
             Spacer(Modifier.height(18.dp))
@@ -334,7 +359,7 @@ private fun ResultCard(result: BreedResult) {
                 Text(
                     text = "${"%.1f".format(result.confidence * 100)}%",
                     style = MaterialTheme.typography.headlineMedium.copy(
-                        color = DeepBlue,
+                        color = if (isUnidentified) Color(0xFFB00020) else DeepBlue,
                         fontWeight = FontWeight.ExtraBold
                     )
                 )
@@ -342,14 +367,14 @@ private fun ResultCard(result: BreedResult) {
 
             Spacer(Modifier.height(8.dp))
 
-            // Progress bar
+            // Confidence bar
             LinearProgressIndicator(
                 progress = result.confidence,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(50)),
-                color = DeepBlue,
+                color = if (isUnidentified) Color(0xFFE53935) else DeepBlue,
                 trackColor = ProgressTrack
             )
 
@@ -357,9 +382,7 @@ private fun ResultCard(result: BreedResult) {
 
             // Trait chips
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                result.traits.forEach { trait ->
-                    TraitChip(trait)
-                }
+                result.traits.forEach { TraitChip(it) }
             }
         }
     }
@@ -412,10 +435,95 @@ private fun IdentifyBreedButton(isDetecting: Boolean, onClick: () -> Unit) {
     }
 }
 
+// ── BREEDS tab content ────────────────────────────────────────────────────────
+
+@Composable
+private fun BreedsContent(innerPadding: PaddingValues) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "Supported Breeds",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                color = DarkNavy,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = "10 breeds the AI can identify",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextGray
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        items(ALL_BREEDS) { breed ->
+            BreedListCard(breed)
+        }
+
+        item { Spacer(Modifier.height(8.dp)) }
+    }
+}
+
+@Composable
+private fun BreedListCard(breed: BreedInfo) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Emoji avatar
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .background(ChipBlue, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(breed.emoji, fontSize = 26.sp)
+            }
+
+            Spacer(Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = breed.name,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = DarkNavy
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    breed.traits.forEach { trait ->
+                        Box(
+                            modifier = Modifier
+                                .background(LightLavender, RoundedCornerShape(50))
+                                .padding(horizontal = 10.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = trait,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = DarkNavy
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ── Bottom navigation bar ─────────────────────────────────────────────────────
 
 @Composable
-private fun CanineBottomBar(
+private fun AppBottomBar(
     selectedTab: BottomTab,
     onTabSelected: (BottomTab) -> Unit,
     onCameraClick: () -> Unit
@@ -433,12 +541,12 @@ private fun CanineBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Discover tab
+            // Identify tab
             BottomNavItem(
-                icon = { Icon(Icons.Default.Explore, null, Modifier.size(24.dp)) },
-                label = "DISCOVER",
-                selected = selectedTab == BottomTab.DISCOVER,
-                onClick = { onTabSelected(BottomTab.DISCOVER) }
+                icon = { Icon(Icons.Default.Search, null, Modifier.size(24.dp)) },
+                label = "IDENTIFY",
+                selected = selectedTab == BottomTab.IDENTIFY,
+                onClick = { onTabSelected(BottomTab.IDENTIFY) }
             )
 
             // Center camera FAB
@@ -457,12 +565,12 @@ private fun CanineBottomBar(
                 )
             }
 
-            // Library tab
+            // Breeds tab
             BottomNavItem(
-                icon = { Icon(Icons.Default.LibraryBooks, null, Modifier.size(24.dp)) },
-                label = "LIBRARY",
-                selected = selectedTab == BottomTab.LIBRARY,
-                onClick = { onTabSelected(BottomTab.LIBRARY) }
+                icon = { Icon(Icons.Default.Pets, null, Modifier.size(24.dp)) },
+                label = "BREEDS",
+                selected = selectedTab == BottomTab.BREEDS,
+                onClick = { onTabSelected(BottomTab.BREEDS) }
             )
         }
     }
@@ -482,9 +590,7 @@ private fun BottomNavItem(
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CompositionLocalProvider(LocalContentColor provides tint) {
-            icon()
-        }
+        CompositionLocalProvider(LocalContentColor provides tint) { icon() }
         Spacer(Modifier.height(3.dp))
         Text(
             text = label,
@@ -497,24 +603,16 @@ private fun BottomNavItem(
 // ── Navigation drawer ─────────────────────────────────────────────────────────
 
 @Composable
-private fun CanineDrawerContent(
-    onClose: () -> Unit,
-    onShare: () -> Unit
-) {
+private fun AppDrawerContent(onClose: () -> Unit, onShare: () -> Unit) {
     ModalDrawerSheet(
         drawerContainerColor = Color.White,
         drawerShape = RoundedCornerShape(topEnd = 28.dp, bottomEnd = 28.dp)
     ) {
-        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(DarkNavy, NavyLight)
-                    )
-                )
+                .background(Brush.linearGradient(colors = listOf(DarkNavy, NavyLight)))
         ) {
             Column(
                 modifier = Modifier
@@ -528,8 +626,8 @@ private fun CanineDrawerContent(
                     modifier = Modifier.size(40.dp)
                 )
                 Spacer(Modifier.height(8.dp))
-                Text("Canine Intel", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Let's have fun with pets", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.7f))
+                Text("Dog Breeds", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
+                Text("AI-powered breed identifier", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.7f))
             }
         }
 

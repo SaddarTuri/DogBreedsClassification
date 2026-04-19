@@ -49,8 +49,7 @@ class BreedViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun loadDefaultImage() = withContext(Dispatchers.IO) {
         runCatching {
             getApplication<Application>().assets.open(SAMPLE_IMAGE).use { stream ->
-                val raw = BitmapFactory.decodeStream(stream)
-                scaleImage(raw)
+                BitmapFactory.decodeStream(stream)
             }
         }.onSuccess { bitmap ->
             _uiState.update { it.copy(currentBitmap = bitmap, statusMessage = "Tap 'Identify Breed' to classify") }
@@ -58,10 +57,9 @@ class BreedViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setBitmap(bitmap: Bitmap) {
-        val scaled = scaleImage(bitmap)
         _uiState.update {
             it.copy(
-                currentBitmap = scaled,
+                currentBitmap = bitmap,
                 detectionResult = null,
                 statusMessage = "Tap 'Identify Breed' to classify"
             )
@@ -75,17 +73,29 @@ class BreedViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isDetecting = true, detectionResult = null) }
 
         viewModelScope.launch(Dispatchers.Default) {
-            val top = clf.recognizeImage(bitmap).firstOrNull()
-            val result = top?.let {
-                BreedResult(
-                    breedName = it.title
+            val scaled = scaleImage(bitmap)
+            val top = clf.recognizeImage(scaled).firstOrNull()
+
+            val result = when {
+                top == null -> null
+
+                // Below 90 % confidence → not reliable enough to name
+                top.confidence < CONFIDENCE_THRESHOLD -> BreedResult(
+                    breedName = "Unidentified Breed",
+                    confidence = top.confidence,
+                    traits = listOf("Low confidence", "Try a clearer photo", "Better lighting")
+                )
+
+                else -> BreedResult(
+                    breedName = top.title
                         .replace("_", " ")
                         .split(" ")
                         .joinToString(" ") { w -> w.replaceFirstChar { c -> c.uppercase() } },
-                    confidence = it.confidence,
-                    traits = getTraits(it.title)
+                    confidence = top.confidence,
+                    traits = getTraits(top.title)
                 )
             }
+
             _uiState.update {
                 it.copy(
                     isDetecting = false,
@@ -111,6 +121,7 @@ class BreedViewModel(application: Application) : AndroidViewModel(application) {
         private const val MODEL_PATH = "saddar.tflite"
         private const val LABELS_PATH = "labels.txt"
         private const val SAMPLE_IMAGE = "dog1.png"
+        private const val CONFIDENCE_THRESHOLD = 0.90f  // below this → Unidentified Breed
 
         private val BREED_TRAITS = mapOf(
             "akita"              to listOf("Loyal", "Dignified", "Protective"),

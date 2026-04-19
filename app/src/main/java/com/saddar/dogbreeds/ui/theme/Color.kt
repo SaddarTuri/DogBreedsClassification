@@ -2,7 +2,7 @@ package com.saddar.dogbreeds.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Brand colors — matches "Canine Intel" dark navy + electric blue palette
+// Brand colors — Dog Breeds dark navy + electric blue palette
 val DarkNavy          = Color(0xFF0A1750)
 val DeepBlue          = Color(0xFF1A33C8)
 val LightLavender     = Color(0xFFECEDF8)   // screen background

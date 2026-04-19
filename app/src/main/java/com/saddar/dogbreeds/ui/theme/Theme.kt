@@ -5,7 +5,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val CanineColorScheme = lightColorScheme(
+private val DogBreedsColorScheme = lightColorScheme(
     primary             = DarkNavy,
     onPrimary           = Color.White,
     primaryContainer    = ChipBlue,
@@ -26,10 +26,10 @@ private val CanineColorScheme = lightColorScheme(
 )
 
 @Composable
-fun CanineIntelTheme(content: @Composable () -> Unit) {
+fun DogBreedsTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = CanineColorScheme,
-        typography  = CanineTypography,
+        colorScheme = DogBreedsColorScheme,
+        typography  = DogBreedsTypography,
         content     = content
     )
 }

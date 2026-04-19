@@ -85,9 +85,9 @@ fun SplashScreen(
                     )
                 }
 
-                // "Canine Intel" hero text
+                // "Dog Breeds" hero text
                 Text(
-                    text = "Canine Intel",
+                    text = "Dog Breeds",
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(horizontal = 24.dp),
@@ -162,7 +162,7 @@ fun SplashScreen(
                         )
                     ) {
                         Text(
-                            text = "Begin Curating",
+                            text = "Start Detection",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp
